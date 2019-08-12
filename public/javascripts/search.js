@@ -19,6 +19,12 @@
         + "sort=-ga:activeVisitors&"
         + "max-results=10000";
     },
+    brexitTerm: function(term){
+      if(term.toLowerCase().match(/e111|\ ehic|deal|withdrawal agreement|no-deal|article 50|brexit|\ eu|eu\ |remain|citizenship|european|settlement|abroad|settled|leave to remain/)){
+        return true;
+      }
+      return false;
+    },
     safeTerm: function(term){
       // Nothing that looks like an email address
       if(term.indexOf('@') > -1){
@@ -93,7 +99,6 @@
     },
     parseResponse: function(data){
       var term, i, _i;
-
       search.zeroNextTicks();
       search.addNextTickValues(data);
       search.addTimeIndexValues();
@@ -101,10 +106,19 @@
     displayResults: function(){
       var term = search.newTerms.pop();
       if(term){
-        search.$el.prepend('<li>'+$('<div>').text(term).html()+'</li>');
-        search.$el.css('margin-top',-search.$el.find('li').first().outerHeight(true)).animate({'margin-top':0},
+        var element = false;
+
+        // Extract Brexit terms
+        if(search.brexitTerm(term)){
+          element = search.$bel;
+        } else {
+          element = search.$el;
+        }
+
+        element.prepend('<li>'+$('<div>').text(term).html()+'</li>');
+        element.css('margin-top',-search.$el.find('li').first().outerHeight(true)).animate({'margin-top':0},
         function(){
-          search.$el.find('li:gt(20)').remove();
+          element.find('li:gt(20)').remove();
           root.setTimeout(search.displayResults, (search.nextRefresh - Date.now())/search.newTerms.length);
         })
       } else {
@@ -113,6 +127,7 @@
     },
     init: function(){
       search.$el = $('#search');
+      search.$bel = $('#brexit-search');
 
       search.reload();
       search.displayResults();
